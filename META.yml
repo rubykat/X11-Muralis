@@ -1,0 +1,20 @@
+---
+name: X11-Muralis
+version: 0.02
+author:
+  - Kathryn Andersen
+abstract: Perl module to display wallpaper on your desktop.
+license: perl
+requires:
+  File::Basename: 0
+  Getopt::ArgvFile: 1.09
+  Getopt::Long: 2.34
+  Image::Info: 0
+  Pod::Usage: 0
+build_requires:
+  Test::More: 0
+provides:
+  X11::Muralis:
+    file: lib/X11/Muralis.pm
+    version: 0.02
+generated_by: Module::Build version 0.2611
