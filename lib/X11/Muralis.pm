@@ -9,11 +9,11 @@ X11::Muralis - Perl module to display wallpaper on your desktop.
 
 =head1 VERSION
 
-This describes version B<0.03> of X11::Muralis.
+This describes version B<0.10> of X11::Muralis.
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.10';
 
 =head1 SYNOPSIS
 
@@ -50,6 +50,8 @@ wallpaper script.
 use Image::Info;
 use File::Basename;
 use File::Find::Rule;
+use X11::Muralis::Backend;
+use Module::Pluggable instantiate => 'new', search_path => 'X11::Muralis::Backend', sub_name => 'backends';
 
 =head1 METHODS
 
@@ -75,6 +77,43 @@ sub new {
     my $self = bless ({%parameters}, ref ($class) || $class);
     return ($self);
 } # new
+
+=head2 get_backends
+
+    my @backends = $obj->list_backends();
+
+Return which backends are available.
+
+=cut
+sub get_backends($) {
+    my $self = shift;
+
+    my @avail_backends = ();
+    my @backends = $self->backends();
+    foreach my $be (@backends)
+    {
+	if ($be->active())
+	{
+	    push @avail_backends, X11::Muralis::Backend::name($be);
+	}
+    }
+    return @avail_backends;
+} # get_backends
+
+=head2 list_backends
+
+    $obj->list_backends();
+
+List which backends are available.
+
+=cut
+sub list_backends($) {
+    my $self = shift;
+
+    my @backends = $self->get_backends();
+    print join("\n", @backends);
+    print "\n";
+} # list_backends
 
 =head2 list_images
 
@@ -149,6 +188,28 @@ sub list_images {
     $count;
 }
 
+=head2 provides
+
+    my %prov = $obj->provides($backend_name);
+
+What does this backend provide?
+
+=cut
+sub provides($$) {
+    my $self = shift;
+    my $backend_name = shift;
+
+    my @backends = $self->backends();
+    foreach my $be (@backends)
+    {
+	if (X11::Muralis::Backend::name($be) eq $backend_name)
+	{
+	    return $be->provides();
+	}
+    }
+    return ();
+} # provides
+
 =head2 display_image
 
     $obj->display_image(%args);
@@ -185,17 +246,17 @@ the selection to images in directories which match the match-string.
 Display the last image which was displayed.  This is useful to
 re-display an image while overriding the default display options.
 
-=item rotate=>I<degrees>
+=item option=>I<string>
 
-Rotate the image by 90, 180 or 270 degrees.
-
-=item smooth=>1
-
-Smooth the image (useful if the image has been zoomed).
+Additional option or options to pass on to the backend.
 
 =item tile=>1
 
 Tile the image to fill the root window.
+
+=item use=>I<backend>
+
+Use the given backend.
 
 =item verbose=>1
 
@@ -241,26 +302,17 @@ sub display_image {
 	$filename = $args{filename};
     }
 
-    my ($fullname, $options) = $self->get_display_options($filename, %args);
-    my $command;
-    if ($self->{imgcmd} eq 'xloadimage')
+    my ($fullname, $opt_ref) = $self->get_display_options($filename, %args);
+    my $backend_name = $args{use};
+    my @backends = $self->backends();
+    foreach my $be (@backends)
     {
-	$command = "xloadimage -onroot $options '$fullname'";
+	if (X11::Muralis::Backend::name($be) eq $backend_name)
+	{
+	    $be->display($fullname, %{$opt_ref});
+	    last;
+	}
     }
-    elsif ($self->{imgcmd} eq 'feh')
-    {
-	$command = "feh $options '$fullname'";
-    }
-    elsif ($self->{imgcmd} eq 'hsetroot')
-    {
-	$command = "hsetroot $options '$fullname'";
-    }
-    elsif ($self->{imgcmd} eq 'xsri')
-    {
-	$command = "xsri $options '$fullname'";
-    }
-    print STDERR $command, "\n" if $args{verbose};
-    system($command);
     $self->save_last_displayed($fullname, %args);
 } # display_image
 
@@ -367,6 +419,10 @@ sub get_image_files {
 	}
     }
 
+    if ($self->{verbose} and !@files)
+    {
+	print STDERR "No files at all!\n";
+    }
     my @ret_files = ();
     if ($args{match} and $args{exclude})
     {
@@ -383,6 +439,10 @@ sub get_image_files {
     else
     {
 	@ret_files = @files;
+    }
+    if ($self->{verbose} and !@ret_files)
+    {
+	print STDERR "No files found.\n";
     }
     return @ret_files;
 } #get_image_files
@@ -493,9 +553,9 @@ sub get_random_file ($) {
     my $rnum = int(rand $total_files) + 1;
 
     my $file_name = $self->find_nth_file($rnum, %args);
-    if (! -f $file_name)
+    if (!$file_name or ! -f $file_name)
     {
-	print STDERR "NOT FOUND #$rnum $file_name\n";
+	print STDERR "NOT FOUND #$rnum (of $total_files) $file_name\n";
     }
 
     if ($args{verbose})
@@ -568,12 +628,11 @@ sub get_display_options ($$;%) {
     my %args = (
 	verbose=>0,
 	fullscreen=>undef,
-	smooth=>undef,
-	seamless=>undef,
+	option=>undef,
 	center=>undef,
 	tile=>0,
 	colors=>undef,
-	rotate=>undef,
+	window=>undef,
 	zoom=>undef,
 	@_
     );
@@ -591,7 +650,6 @@ sub get_display_options ($$;%) {
     {
 	warn "Can't parse info for $fullname: $error\n";
 	$args{fullscreen} = 0 if !defined $args{fullscreen};
-	$args{smooth} = 0 if !defined $args{smooth};
 	$args{center} = 0 if !defined $args{center};
     }
     else
@@ -603,6 +661,11 @@ sub get_display_options ($$;%) {
 		  $info->{width}, "x", $info->{height},
 		  " ", $info->{color_type},
 		  "\n";
+	}
+	if (defined $args{tile} and $args{tile})
+	{
+	    # if we want it tiled, we don't want it fullscreen
+	    $args{fullscreen} = 0;
 	}
 	if (!defined $args{fullscreen}) # not set
 	{
@@ -627,20 +690,6 @@ sub get_display_options ($$;%) {
 	my $overlarge = ($info->{width} > $self->{_root_width}
 			 || $info->{height} > $self->{_root_height});
 
-	if (!defined $args{smooth})
-	{
-	    # default is off
-	    $args{smooth} = 0;
-	    if ($args{fullscreen})
-	    {
-		# if fullscreen is set, then check if we want smoothing
-		if (($info->{width} < ($self->{_root_width} * 0.6))
-		    || ($info->{height} < ($self->{_root_height} * 0.6 )))
-		{
-		    $args{smooth} = 1;
-		}
-	    }
-	}
 	# do we want it tiled or centred?
 	if (!defined $args{center}) # not set
 	{
@@ -660,40 +709,7 @@ sub get_display_options ($$;%) {
 	}
     }
 
-    if ($self->{imgcmd} eq 'xloadimage')
-    {
-	$options .= " -tile" if $args{tile};
-	$options .= " -fullscreen -border black" if $args{fullscreen};
-	$options .= " -center" if $args{center};
-	$options .= " -smooth" if $args{smooth};
-	$options .= " -colors " . $args{colors} if $args{colors};
-	$options .= " -rotate " . $args{rotate} if $args{rotate};
-	$options .= " -zoom " . $args{zoom} if $args{zoom};
-    }
-    elsif ($self->{imgcmd} eq 'feh')
-    {
-	$options = " --bg-tile" if $args{tile};
-	$options = " --bg-scale" if $args{fullscreen};
-	$options = " --bg-center" if $args{center};
-	$options = " --bg-tile" if (!$options);
-    }
-    elsif ($self->{imgcmd} eq 'hsetroot')
-    {
-	$options = " -tile" if $args{tile};
-	$options = " -full" if $args{fullscreen};
-	$options = " -center" if $args{center};
-	$options = " -tile" if (!$options);
-    }
-    elsif ($self->{imgcmd} eq 'xsri')
-    {
-	$options = " --tile" if $args{tile};
-	$options = " --color black --scale-width=100 --scale-height=100 --keep-aspect --center-x --center-y --emblem" if $args{fullscreen};
-	$options = " --color black --scale-width=$args{zoom} --scale-height=$args{zoom} --keep-aspect --emblem" if $args{zoom};
-	$options = " --color black --center-x --center-y --emblem" if $args{center};
-	$options = " --tile" if (!$options);
-
-    }
-    return ($fullname, $options);
+    return ($fullname, \%args);
 } # get_display_options
 
 =head2 save_last_displayed

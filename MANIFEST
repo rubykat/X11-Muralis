@@ -1,14 +1,19 @@
 Build.PL
-Makefile.PL
 Changes
+lib/X11/Muralis.pm
+lib/X11/Muralis/Backend.pm
+lib/X11/Muralis/Backend/Feh.pm
+lib/X11/Muralis/Backend/Hsetroot.pm
+lib/X11/Muralis/Backend/Qiv.pm
+lib/X11/Muralis/Backend/Xloadimage.pm
+lib/X11/Muralis/Backend/Xsri.pm
+Makefile.PL
 MANIFEST
 MANIFEST.SKIP
-META.yml # Will be created by "make dist"
+META.yml			# Will be created by "make dist"
 README
-lib/X11/Muralis.pm
 scripts/muralis
 t/00_dist.t
 t/01_load.t
 t/pod-coverage.t
 t/pod.t
-

@@ -3,6 +3,7 @@
 require v5.6.1;
 use strict;
 use warnings;
+use YAML::Syck;
 
 =head1 NAME
 
@@ -10,15 +11,19 @@ muralis - display wallpaper on your desktop.
 
 =head1 VERSION
 
-This describes version B<0.03> of muralis.
+This describes version B<0.10> of muralis.
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.10';
 
 =head1 SYNOPSIS
 
 muralis --help | --manpage | --version
+
+muralis --backends
+
+muralis --provides I<backend>
 
 muralis --list { --dir I<directory> } [ --exclude I<string> ]
 [ --is_image I<string> ] [ --listformat I<format> ]
@@ -27,8 +32,9 @@ muralis --list { --dir I<directory> } [ --exclude I<string> ]
 muralis [ --centre | --center ] [ --colours I<num> | --colors I<num> ]
 [ --config_dir I<directory> ] [ --dir I<directory> ] [ --exclude I<string> ]
 [ --is_image I<string> ] [ --fullscreen ] [ --match I<string> ]
-[ --rotate I<degrees> ] [ --smooth ] [ --tile ] [ --unseen ]
-[ --verbose ] [ --zoom I<percent> ]
+[ --option I<string> ] [ --stretch ] [ --tile ] [ --unseen ]
+[ --verbose ] [ --window I<window-id> ] [ --zoom I<percent> ]
+--use I<backend>
 ( --random | --repeat_last | I<file> )
 
 =head1 DESCRIPTION
@@ -43,8 +49,9 @@ on the screen.  Setting the options overrides this behaviour.
 One can also repeat the display of the last-displayed image, changing the
 display options as one desires.
 
-This uses the an external program (xloadimage, xsri, or feh) to display the
-image file.
+This uses the an external program to display the image file; display backends
+are implemented as plugins.  To find out which bckends are available, use the
+--backends option to print a list of them.
 
 This also depends on xwininfo to get information about the root window.
 
@@ -61,6 +68,12 @@ Boolean options can be disabled by prefixing them with 'no'; for example,
 
 =over
 
+=item --backends
+
+List which display backends are available.  Note that this doesn't just check
+which plugin modules are installed, but also checks whether the program used
+by the backend is available.
+
 =item --centre | --center
 
 Centre the image on the root window.
@@ -68,7 +81,7 @@ Centre the image on the root window.
 =item --colours I<num> | --colors I<num>
 
 Limit the number of colours used to display the image.  This is useful
-for a 256-colour display.
+for a 256-colour display.  Only supported by some backends.
 
 =item --config_dir I<directory>
 
@@ -84,11 +97,6 @@ for more directories.
 If an image matches this, it is excluded from --random, --list, or --nth
 display.
 
-=item --imgcmd I<string>
-
-The external command to use to display images.  Supported commands
-are xloadimage, xsri and feh.
-
 =item --is_image I<string>
 
 What files are considered to be image files?  This is a regular
@@ -100,7 +108,8 @@ Most of the time you don't need to use this option.
 
 =item --fullscreen
 
-The image will be zoomed to fit the size of the screen.
+The image will be zoomed to fit the size of the screen, keeping the aspect
+ratio the same if the backend supports this.
 
 =item --help
 
@@ -134,10 +143,19 @@ which match the string.
 Display the nth image.  If --match is given, limit the selection
 to images which match the match-string.
 
+=item --option I<string>
+
+An additional option or options to pass on to the backend.
+Used for uncommon options which are supported in one backend and not another.
+
 =item --outfile
 
 Output file for the --list command to print its output.  If this
 argument is not given, list will list to standard output.
+
+=item --provides I<backend>
+
+What options will work for this backend?
 
 =item --random
 
@@ -149,15 +167,12 @@ the selection to images which match the match-string.
 Display the last image which was displayed.  This is useful to
 re-display an image while overriding the default display options.
 
-=item --rotate I<degrees>
+=item --stretch
 
-Rotate the image by 90, 180 or 270 degrees.
-
-=item --smooth
-
-Smooth the image (useful if the image has been zoomed).
-Only works if using xloadimage as the displayer.
-(See --imgcmd)
+The image will be zoomed to fit the size of the screen.  This does
+not preserve the aspect ratio.  Some backends support both B<fullscreen> and
+B<stretch>, while some support only one or the other, in which case they are
+treated the same.
 
 =item --tile
 
@@ -174,8 +189,12 @@ The 'unseen' list is in the '~/.muralis/unseen' file, which is
 automatically updated or created whenever the --unseen option is used.
 Note that if this file exists and the --unseen option is used, muralis does
 not check the image directories, so if you have added a new directory to
-your .xloadimagerc file, you will need to delete the 'unseen' file in order
+your options, you will need to delete the 'unseen' file in order
 to reset the list of unseen images.
+
+=item --use I<backend>
+
+Which backend to use.  See L<backends>.
 
 =item --verbose
 
@@ -184,6 +203,12 @@ Print informational messages.
 =item --version
 
 Print version information and exit.
+
+=item --window I<window-id>
+
+Display on the given window, rather than the root window.
+This is useful for window-managers which take over the desktop display.
+Only works for backends which provide this option.
 
 =item --zoom I<percent>
 
@@ -256,7 +281,6 @@ sub init_data ($) {
 
     $data_ref->{manpage} = 0;
     $data_ref->{verbose} = 0;
-    $data_ref->{imgcmd} = 'xloadimage';
 } # init_data
 
 sub process_args ($) {
@@ -282,6 +306,7 @@ sub process_args ($) {
     $op->getoptions($data_ref,
 	       'verbose!',
 	       'manpage',
+	       'backends',
 	       'list',
 	       'listformat=s',
 	       'outfile=s',
@@ -290,10 +315,9 @@ sub process_args ($) {
 	       'is_image=s',
 	       'tile!',
 	       'fullscreen!',
-	       'smooth!',
-	       'seamless!',
+	       'stretch!',
 	       'zoom=n',
-	       'rotate=n',
+	       'option=s',
 	       'nth=n',
 	       'colors|colours=n',
 	       'center|centre!',
@@ -303,7 +327,9 @@ sub process_args ($) {
 	       'unseen!',
 	       'recursive!',
 	       'repeat_last',
-	       'imgcmd=s',
+	       'provides=s',
+	       'window=s',
+	       'use=s',
 	      ) or pod2usage(2);
 
     if ($data_ref->{'manpage'})
@@ -325,9 +351,29 @@ MAIN: {
     init_data(\%data);
     process_args(\%data);
     my $obj = X11::Muralis->new(%data);
-    if ($data{list})
+    if ($data{backends})
+    {
+	$obj->list_backends();
+    }
+    elsif ($data{provides})
+    {
+	my %prov = $obj->provides($data{provides});
+	foreach my $key (sort keys %prov)
+	{
+	    if ($prov{$key})
+	    {
+		print $key, "\n";
+	    }
+	}
+    }
+    elsif ($data{list})
     {
 	$obj->list_images(%data);
+    }
+    elsif (!$data{use})
+    {
+	print STDERR "No backend given.\n";
+	pod2usage(2);
     }
     else
     {

@@ -11,6 +11,8 @@ my $builder = Module::Build->new(
 	     'Image::Info' => 0,
 	     'File::Basename' => 0,
 	     'File::Find::Rule' => 0,
+	     'File::Spec' => 0,
+	     'Module::Pluggable' => 0,
 	'Getopt::Long' => 2.34,
 	'Pod::Usage' => 0,
 	'Getopt::ArgvFile' => 1.09,
@@ -19,7 +21,7 @@ my $builder = Module::Build->new(
         'Test::More' => 0,
     },
     script_files => [qw(scripts/muralis)],
-    create_makefile_pl => 'passthrough',
+    create_makefile_pl => 'traditional',
 #    add_to_cleanup      => [ 'X11-Muralis-*' ],
 );
 
