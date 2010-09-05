@@ -675,13 +675,23 @@ sub get_display_options ($$;%) {
 	    # and height of the screen, make it fullscreen
 	    # However, if the the image is a square, it's likely to be a tile,
 	    # in which case we don't want to expand it unless it's quite big
-	    if (
-		(($info->{width} == $info->{height})
-		 && ($info->{width} > ($self->{_root_width} * 0.7)))
-		||
-		(($info->{width} != $info->{height})
-		 && ($info->{width} > ($self->{_root_width} * 0.5))
-		 && ($info->{height} > ($self->{_root_height} * 0.5)))
+	    # Also, if one of the sides is the exact size of the screen,
+	    # and the other dimension is smaller or equal to the size of the screen,
+	    # we don't need to make the image fullscreen, because it already is.
+	    if ($info->{width} == $info->{height})
+	    {
+		 if ($info->{width} > ($self->{_root_width} * 0.7))
+		 {
+		     $args{fullscreen} = 1;
+		 }
+	    }
+	    elsif (($info->{width} > ($self->{_root_width} * 0.5))
+		 && ($info->{height} > ($self->{_root_height} * 0.5))
+		 && !(($info->{width} == $self->{_root_width}
+		       && $info->{height} <= $self->{_root_height})
+		      || ($info->{height} == $self->{_root_height}
+			  && $info->{width} <= $self->{_root_width})
+		 )
 	       )
 	    {
 		$args{fullscreen} = 1;
