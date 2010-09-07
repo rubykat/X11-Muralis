@@ -1,6 +1,10 @@
 Revision history for X11-Muralis
 ================================
 
+0.10 Sun  6 December 2009
+-------------------------
+  * Revamp; displayng is done with backends.
+
 0.03 Tue 28 August 2007
 -----------------------
 
