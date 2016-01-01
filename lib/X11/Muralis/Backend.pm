@@ -8,11 +8,11 @@ X11::Muralis::Backend - display backend for X11::Muralis
 
 =head1 VERSION
 
-This describes version B<0.10> of X11::Muralis::Backend.
+This describes version B<0.1001> of X11::Muralis::Backend.
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.1001';
 
 =head1 SYNOPSIS
 

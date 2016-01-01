@@ -10,11 +10,11 @@ X11::Muralis::Backend:Qiv - use qiv to display images on the desktop.
 
 =head1 VERSION
 
-This describes version B<0.10> of X11::Muralis::Backend::Qiv.
+This describes version B<0.1001> of X11::Muralis::Backend::Qiv.
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.1001';
 
 =head1 SYNOPSIS
 

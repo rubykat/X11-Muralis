@@ -10,11 +10,11 @@ X11::Muralis::Backend:Xloadimage - use xloadimage to display images on the deskt
 
 =head1 VERSION
 
-This describes version B<0.10> of X11::Muralis::Backend::Xloadimage.
+This describes version B<0.1001> of X11::Muralis::Backend::Xloadimage.
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.1001';
 
 =head1 SYNOPSIS
 
