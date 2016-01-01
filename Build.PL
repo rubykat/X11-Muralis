@@ -21,7 +21,6 @@ my $builder = Module::Build->new(
         'Test::More' => 0,
     },
     script_files => [qw(scripts/muralis)],
-    create_makefile_pl => 'traditional',
 #    add_to_cleanup      => [ 'X11-Muralis-*' ],
     meta_add => {
         resources  => {

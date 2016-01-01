@@ -1,0 +1,79 @@
+{
+   "abstract" : "Perl module to display wallpaper on your desktop.",
+   "author" : [
+      "Kathryn Andersen"
+   ],
+   "dynamic_config" : 1,
+   "generated_by" : "Module::Build version 0.4214",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "X11-Muralis",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "Test::More" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Module::Build" : "0.42"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "File::Basename" : "0",
+            "File::Find::Rule" : "0",
+            "File::Spec" : "0",
+            "Getopt::ArgvFile" : "1.09",
+            "Getopt::Long" : "2.34",
+            "Image::Info" : "0",
+            "Module::Pluggable" : "0",
+            "Pod::Usage" : "0"
+         }
+      }
+   },
+   "provides" : {
+      "X11::Muralis" : {
+         "file" : "lib/X11/Muralis.pm",
+         "version" : "0.1001"
+      },
+      "X11::Muralis::Backend" : {
+         "file" : "lib/X11/Muralis/Backend.pm",
+         "version" : "0.1001"
+      },
+      "X11::Muralis::Backend::Feh" : {
+         "file" : "lib/X11/Muralis/Backend/Feh.pm",
+         "version" : "0.1001"
+      },
+      "X11::Muralis::Backend::Hsetroot" : {
+         "file" : "lib/X11/Muralis/Backend/Hsetroot.pm",
+         "version" : "0.1001"
+      },
+      "X11::Muralis::Backend::Qiv" : {
+         "file" : "lib/X11/Muralis/Backend/Qiv.pm",
+         "version" : "0.1001"
+      },
+      "X11::Muralis::Backend::Xloadimage" : {
+         "file" : "lib/X11/Muralis/Backend/Xloadimage.pm",
+         "version" : "0.1001"
+      },
+      "X11::Muralis::Backend::Xsri" : {
+         "file" : "lib/X11/Muralis/Backend/Xsri.pm",
+         "version" : "0.1001"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "homepage" : "http://github.com/rubykat/X11-Muralis",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/rubykat/X11-Muralis.git"
+      }
+   },
+   "version" : "0.1001"
+}

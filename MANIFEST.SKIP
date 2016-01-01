@@ -2,7 +2,8 @@
 \bRCS\b
 \bCVS\b
 ,v$
-^_darcs/
+^.git/
+.gitignore
 
 version.txt
 old_version.txt
