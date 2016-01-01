@@ -23,6 +23,12 @@ my $builder = Module::Build->new(
     script_files => [qw(scripts/muralis)],
     create_makefile_pl => 'traditional',
 #    add_to_cleanup      => [ 'X11-Muralis-*' ],
+    meta_add => {
+        resources  => {
+            repository  => 'git://github.com/rubykat/X11-Muralis.git',
+            homepage  => 'http://github.com/rubykat/X11-Muralis',
+        },
+    },
 );
 
 $builder->create_build_script();
