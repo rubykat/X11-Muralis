@@ -5,11 +5,7 @@
 ^.git/
 .gitignore
 
-version.txt
-old_version.txt
-mod_devaid.conf
-darcs_prebuild.pl
-.todo
+dist.ini
 
 # distro files
 ^X11-Muralis-*

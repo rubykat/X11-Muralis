@@ -1,4 +1,5 @@
 package X11::Muralis;
+
 use strict;
 use warnings;
 use 5.8.3;
@@ -6,14 +7,6 @@ use 5.8.3;
 =head1 NAME
 
 X11::Muralis - Perl module to display wallpaper on your desktop.
-
-=head1 VERSION
-
-This describes version B<0.1001> of X11::Muralis.
-
-=cut
-
-our $VERSION = '0.1001';
 
 =head1 SYNOPSIS
 

@@ -1,4 +1,5 @@
 package X11::Muralis::Backend::Xloadimage;
+
 use strict;
 use warnings;
 
@@ -7,14 +8,6 @@ our @ISA = qw(X11::Muralis::Backend);
 =head1 NAME
 
 X11::Muralis::Backend:Xloadimage - use xloadimage to display images on the desktop.
-
-=head1 VERSION
-
-This describes version B<0.1001> of X11::Muralis::Backend::Xloadimage.
-
-=cut
-
-our $VERSION = '0.1001';
 
 =head1 SYNOPSIS
 

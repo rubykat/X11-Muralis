@@ -1,21 +1,12 @@
 #!/usr/bin/env perl
+
 # vim:ts=8 sw=4 sts=4 ai
-require v5.6.1;
 use strict;
 use warnings;
-use YAML::Syck;
 
 =head1 NAME
 
 muralis - display wallpaper on your desktop.
-
-=head1 VERSION
-
-This describes version B<0.1001> of muralis.
-
-=cut
-
-our $VERSION = '0.1001';
 
 =head1 SYNOPSIS
 
@@ -393,7 +384,7 @@ Please report any bugs or feature requests to the author.
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright (c) 2005-2007 by Kathryn Andersen
+Copyright (c) 2005-2016 by Kathryn Andersen
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

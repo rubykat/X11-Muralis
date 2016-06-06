@@ -1,9 +1,0 @@
-TODO for X11::Muralis
-=====================
-1. Convert to use Dist::Zilla
-2. Add ImageMagick display plugin
-3. write more tests
-4. add mirror option to ImageMagick plugin
-5. add habak display plugin
-6. add more display options such aspect/noaspect
-7. improve exclusion in keeping with recursive dirs; perhaps use one of the file-finding modules
