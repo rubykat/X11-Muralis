@@ -1,9 +1,4 @@
 #!/usr/bin/env perl
-
-# vim:ts=8 sw=4 sts=4 ai
-use strict;
-use warnings;
-
 =head1 NAME
 
 muralis - display wallpaper on your desktop.
@@ -257,6 +252,8 @@ Pod::Usage
 X11::Muralis
 
 =cut
+use strict;
+use warnings;
 
 use Getopt::Long 2.34;
 use Getopt::ArgvFile justload=>1;
@@ -325,7 +322,7 @@ sub process_args ($) {
 
     if ($data_ref->{'manpage'})
     {
-	pod2usage({ -message => "$0 version $VERSION",
+	pod2usage({ -message => "$0",
 		    -exitval => 0,
 		    -verbose => 2,
 	    });
@@ -391,4 +388,5 @@ under the same terms as Perl itself.
 
 =cut
 
+# vim:ts=8 sw=4 sts=4 ai
 __END__
