@@ -261,6 +261,8 @@ use Pod::Usage;
 use File::Basename;
 use X11::Muralis;
 
+our $VERSION = $X11::Muralis::VERSION;
+
 #========================================================
 # Subroutines
 
@@ -322,7 +324,7 @@ sub process_args ($) {
 
     if ($data_ref->{'manpage'})
     {
-	pod2usage({ -message => "$0",
+	pod2usage({ -message => "$0 version $X11::Muralis::VERSION",
 		    -exitval => 0,
 		    -verbose => 2,
 	    });
